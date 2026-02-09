@@ -40,6 +40,6 @@ Built entirely with open-source tools: Ollama (self-hosted LLM inference), Postg
 - NGA Open Data repository: https://github.com/NationalGalleryOfArt/opendata
 - NGA Open Access Images: https://www.nga.gov/open-access-images.html
 
-## 🤝 Collaborator
+## 🤝 Data Source
 
 National Gallery of Art: https://github.com/NationalGalleryOfArt
