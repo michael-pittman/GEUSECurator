@@ -13,7 +13,7 @@
 ## Infrastructure State (as of 2026-02-07)
 
 **Already running:**
-- n8n at `https://n8n.geuse.io` with 3 active CuratorInTheGeuse workflows + 1 unified PG helper
+- n8n at `https://ai.geuse.io` with 3 active CuratorInTheGeuse workflows + 1 unified PG helper
 - PostgreSQL 16 (remote EC2) with NGA schema deployed (5 tables: `artworks`, `artwork_images`, `curator_feedback`, `search_queries`, `vector_metadata`) -- **all empty**
 - Qdrant v1.13 with `geuse_artworks` collection (768-dim, cosine) -- **empty**
 - Ollama with `mxbai-embed-large` (embeddings, 768d), `gemma3` (chat, 4.3B), `llama3.3` (chat, 70.6B), `llava` (vision, 7B)
@@ -58,12 +58,12 @@ AI-powered web platform for exploring the National Gallery of Art's open collect
 
 ## Architecture
 - **Frontend:** React 19 + Vite + Tailwind CSS 4, static site deployed to Geuse.io S3
-- **Backend:** n8n workflows at https://n8n.geuse.io (webhook API)
+- **Backend:** n8n workflows at https://ai.geuse.io (webhook API)
 - **Database:** PostgreSQL 16 (structured data), Qdrant v1.13 (vector search)
 - **AI:** Ollama with mxbai-embed-large (embeddings) + gemma3 (chat)
 
 ## Service URLs
-- n8n: https://n8n.geuse.io
+- n8n: https://ai.geuse.io
 - Ollama: http://ollama.geuse.io (internal: ollama:11434)
 - Qdrant: http://qdrant.geuse.io (internal: qdrant:6333)
 - PostgreSQL: postgres.geuse.io:5432
@@ -92,7 +92,7 @@ AI-powered web platform for exploring the National Gallery of Art's open collect
 
 ```bash
 # API Configuration
-VITE_N8N_BASE_URL=https://n8n.geuse.io
+VITE_N8N_BASE_URL=https://ai.geuse.io
 VITE_SEARCH_ENDPOINT=/webhook/art-search-chat/chat
 VITE_CURATOR_ENDPOINT=/webhook/curator-assistant/chat
 VITE_DETAIL_ENDPOINT=/webhook/detail
@@ -210,7 +210,7 @@ Use n8n MCP tools:
 **Step 2: Test the Search webhook**
 
 ```bash
-curl -X POST https://n8n.geuse.io/webhook/art-search-chat/chat \
+curl -X POST https://ai.geuse.io/webhook/art-search-chat/chat \
   -H "Content-Type: application/json" \
   -d '{"chatInput": "impressionist paintings"}'
 ```
@@ -220,7 +220,7 @@ Document the exact response format for frontend integration.
 **Step 3: Test the Curator webhook**
 
 ```bash
-curl -X POST https://n8n.geuse.io/webhook/curator-assistant/chat \
+curl -X POST https://ai.geuse.io/webhook/curator-assistant/chat \
   -H "Content-Type: application/json" \
   -d '{"chatInput": "What impressionist paintings do you have?", "sessionId": "test-001"}'
 ```
@@ -435,7 +435,7 @@ export interface CuratorResponse {
 ```typescript
 // src/api/client.ts
 
-const BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'https://n8n.geuse.io'
+const BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'https://ai.geuse.io'
 
 export async function apiPost<T>(endpoint: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -1434,7 +1434,7 @@ git commit -m "fix: adapt API client to actual n8n webhook response format"
 
 ```bash
 # .env.production
-VITE_N8N_BASE_URL=https://n8n.geuse.io
+VITE_N8N_BASE_URL=https://ai.geuse.io
 VITE_SEARCH_ENDPOINT=/webhook/art-search-chat/chat
 VITE_CURATOR_ENDPOINT=/webhook/curator-assistant/chat
 ```
@@ -1536,7 +1536,7 @@ Use `@n8n-workflow-patterns` skill for webhook processing pattern.
 **Step 3: Test the webhook**
 
 ```bash
-curl -X POST https://n8n.geuse.io/webhook/flag \
+curl -X POST https://ai.geuse.io/webhook/flag \
   -H "Content-Type: application/json" \
   -d '{"object_id": 1, "category": "inaccurate_description", "description": "Test flag", "reporter_session_id": "test-001"}'
 ```

@@ -4,7 +4,7 @@
 
 ✅ **Status:** Working
 - Successfully ingested 10 artworks via webhook
-- Webhook: `POST https://n8n.geuse.io/webhook/data-ingestion`
+- Webhook: `POST https://ai.geuse.io/webhook/data-ingestion`
 - Returns empty body on success (200 OK)
 - Script updated to handle empty responses
 

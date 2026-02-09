@@ -40,7 +40,7 @@ Files created:
 
 API Configuration:
 ```typescript
-VITE_N8N_BASE_URL=https://n8n.geuse.io
+VITE_N8N_BASE_URL=https://ai.geuse.io
 VITE_SEARCH_ENDPOINT=/webhook/art-search-chat/chat
 VITE_CURATOR_ENDPOINT=/webhook/curator-assistant/chat
 ```
@@ -193,8 +193,8 @@ b7f03ec fix: accessibility improvements and responsive polish
 ## Backend Integration Status
 
 ### API Endpoints Configured
-- Search: `POST https://n8n.geuse.io/webhook/art-search-chat/chat`
-- Curator: `POST https://n8n.geuse.io/webhook/curator-assistant/chat`
+- Search: `POST https://ai.geuse.io/webhook/art-search-chat/chat`
+- Curator: `POST https://ai.geuse.io/webhook/curator-assistant/chat`
 
 ### Model Configuration (from Phase 1)
 - Chat: `llama3.2:3b` (tool-calling capable)

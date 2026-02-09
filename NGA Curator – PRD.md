@@ -17,7 +17,7 @@ The initial deployment will ingest only a small sample of the NGA open data (for
 #### Deployment & Infrastructure
 
 - **Static Webapp**: The front-end is a static bundle served from an S3 bucket on Geuse.io, ensuring global availability via CDN. All dynamic data fetches go to n8n webhooks over HTTPS.
-- **n8n Workflow Engine**: An n8n instance (v2.6.3) is running at https://n8n.geuse.io with webhook endpoints enabled.
+- **n8n Workflow Engine**: An n8n instance (v2.6.3) is running at https://ai.geuse.io with webhook endpoints enabled.
 - **Back-end Services**: PostgreSQL, Qdrant, and Ollama are running as internal services (e.g. Docker containers) accessible to n8n via internal hostnames (`http://postgres:5432`, `http://qdrant:6333`, `http://ollama:11434`). These services are not exposed publicly – the front-end communicates only with n8n.
 - **AI Models**: Ollama (run in Docker) has the following models pre-loaded: `nomic-embed-text:latest` and `mxbai-embed-large:latest` for embeddings (768-dim), `llama3.2:3b` for the curator chat, and `llava:latest` for vision (e.g. image description during ingestion). No calls to external AI APIs are required, keeping all AI inference on internal infrastructure for data privacy.
 
@@ -540,7 +540,7 @@ Each workflow will be thoroughly tested with sample inputs. We will also use n8n
 
 The front-end communicates with n8n through RESTful API endpoints (webhooks). Here we summarize the external API contract for the web application. All endpoints are under a common base, for example:
 
-**Base URL**: `https://n8n.geuse.io/webhook` (the exact domain/path might differ depending on n8n config, but this is assumed).
+**Base URL**: `https://ai.geuse.io/webhook` (the exact domain/path might differ depending on n8n config, but this is assumed).
 
 The following endpoints are available:
 

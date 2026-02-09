@@ -3,7 +3,7 @@
 ## Live URLs
 
 **Production Site:** https://www.geuse.io/curator/
-**API Backend:** https://n8n.geuse.io
+**API Backend:** https://ai.geuse.io
 
 ## Infrastructure
 
@@ -15,7 +15,7 @@
 - **Base URL:** `/curator/`
 
 ### Backend
-- **n8n:** https://n8n.geuse.io
+- **n8n:** https://ai.geuse.io
 - **Ollama:** http://ollama.geuse.io
 - **Qdrant:** http://qdrant.geuse.io
 - **PostgreSQL:** postgres.geuse.io:5432
@@ -84,7 +84,7 @@ curl -I https://www.geuse.io/curator/assets/index-CLJpBzkD.js
 ### Build-time Variables (.env)
 
 ```bash
-VITE_N8N_BASE_URL=https://n8n.geuse.io
+VITE_N8N_BASE_URL=https://ai.geuse.io
 VITE_SEARCH_ENDPOINT=/webhook/art-search-chat/chat
 VITE_CURATOR_ENDPOINT=/webhook/curator-assistant/chat
 ```
@@ -203,7 +203,7 @@ done
 **Content Security Policy:**
 Consider adding CSP headers in CloudFront response headers policy:
 ```
-Content-Security-Policy: default-src 'self'; connect-src 'self' https://n8n.geuse.io
+Content-Security-Policy: default-src 'self'; connect-src 'self' https://ai.geuse.io
 ```
 
 ## Performance

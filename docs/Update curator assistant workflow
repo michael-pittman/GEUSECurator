@@ -4,7 +4,7 @@ Update the main curator assistant workflow to use HTTP delegation to the new cur
 
 **New Helper Workflow Created:**
 - Workflow ID: `sGgv6lUC6udEkKKB`
-- Webhook URL: `https://n8n.geuse.io/webhook/curator-helper`
+- Webhook URL: `https://ai.geuse.io/webhook/curator-helper`
 - Handles: search, artwork_details, review_queue operations
 
 **Main Curator Workflow:**
@@ -39,7 +39,7 @@ Update the curator workflow to use the new helper:
    ```javascript
    {
      method: 'POST',
-     url: 'https://n8n.geuse.io/webhook/curator-helper',
+     url: 'https://ai.geuse.io/webhook/curator-helper',
      body: {
        query: '{{ $json.chatInput }}',
        sessionId: '{{ $json.sessionId }}',

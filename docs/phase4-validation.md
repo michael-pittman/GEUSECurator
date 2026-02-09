@@ -15,7 +15,7 @@ Phase 4 backend optimization targets:
 - Status: `active`
 - Runtime path is now:
   - `Curator Assistant Chat`
-  - `Run Curator Helper` (HTTP POST to `https://n8n.geuse.io/webhook/curator-helper`)
+  - `Run Curator Helper` (HTTP POST to `https://ai.geuse.io/webhook/curator-helper`)
   - `Format Curator Response`
 - Direct Ollama/AI Agent/tool nodes were removed from the execution path to prevent OOM.
 
@@ -33,7 +33,7 @@ Phase 4 backend optimization targets:
 
 ## Test Results
 
-All tests run against live webhooks at `https://n8n.geuse.io`.
+All tests run against live webhooks at `https://ai.geuse.io`.
 
 | Test | Endpoint | Payload (summary) | Result |
 |---|---|---|---|

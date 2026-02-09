@@ -130,10 +130,10 @@ curl -I https://www.geuse.io/curator/
 | Helper - Qdrant Search | `417KSfsuYiWGa0AT` | Search helper (vector ops) |
 
 ### API Endpoints
-- **Search:** `POST https://n8n.geuse.io/webhook/art-search-chat/chat`
-- **Curator:** `POST https://n8n.geuse.io/webhook/curator-assistant/chat`
-- **Ingestion:** `POST https://n8n.geuse.io/webhook/data-ingestion`
-- **Curator Helper:** `POST https://n8n.geuse.io/webhook/curator-helper`
+- **Search:** `POST https://ai.geuse.io/webhook/art-search-chat/chat`
+- **Curator:** `POST https://ai.geuse.io/webhook/curator-assistant/chat`
+- **Ingestion:** `POST https://ai.geuse.io/webhook/data-ingestion`
+- **Curator Helper:** `POST https://ai.geuse.io/webhook/curator-helper`
 
 ### Database
 - **PostgreSQL:** `postgres.geuse.io:5432`
@@ -199,7 +199,7 @@ ollama pull nomic-embed-text:latest
 # Point Ollama base URL to new GPU instance
 
 # 5. Test workflows
-curl -X POST https://n8n.geuse.io/webhook/art-search-chat/chat \
+curl -X POST https://ai.geuse.io/webhook/art-search-chat/chat \
   -d '{"chatInput": "test", "sessionId": "test"}'
 
 # 6. Run full ingestion
@@ -281,7 +281,7 @@ python scripts/data_ingestion_pipeline.py --limit 1000
 
 ### Build-time (.env)
 ```bash
-VITE_N8N_BASE_URL=https://n8n.geuse.io
+VITE_N8N_BASE_URL=https://ai.geuse.io
 VITE_SEARCH_ENDPOINT=/webhook/art-search-chat/chat
 VITE_CURATOR_ENDPOINT=/webhook/curator-assistant/chat
 ```

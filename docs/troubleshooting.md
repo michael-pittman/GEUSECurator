@@ -16,7 +16,7 @@ CloudFront has a 30-second origin response timeout, but n8n workflows take longe
 
 #### Solution 1: Manually Ingest via n8n UI (Recommended for Now)
 
-1. **Access n8n directly:** https://n8n.geuse.io
+1. **Access n8n directly:** https://ai.geuse.io
 2. **Open workflow:** "CuratorInTheGeuse - AI Data Ingestion"
 3. **Manually execute** with test data:
    ```json
@@ -106,10 +106,10 @@ While backend is being fixed, you can:
 Check n8n execution status:
 ```bash
 # If n8n API is accessible
-curl https://n8n.geuse.io/api/v1/executions
+curl https://ai.geuse.io/api/v1/executions
 ```
 
-Or visit: https://n8n.geuse.io → Executions tab
+Or visit: https://ai.geuse.io → Executions tab
 
 ### Long-term Solution
 

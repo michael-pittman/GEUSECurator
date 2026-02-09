@@ -208,7 +208,7 @@ npm run build
 ## Backend Integration Status
 
 ### API Endpoint
-- Curator: `POST https://n8n.geuse.io/webhook/curator-assistant/chat`
+- Curator: `POST https://ai.geuse.io/webhook/curator-assistant/chat`
 
 ### Current Backend Status
 ⚠️ **Memory Constraint:** Backend curator workflow needs optimization

@@ -1,13 +1,17 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { HeroSection } from './HeroSection'
 import { FeaturedRow } from './FeaturedRow'
 import { RecentRow } from './RecentRow'
-import { searchArtworks } from '../../api/search'
+import { searchArtworks, searchNewestArtworks } from '../../api/search'
+import { shuffleWithSeed, getDateSeed } from '../../utils/shuffle'
 import type { Artwork } from '../../types/artwork'
 
 interface HomeViewProps {
   onArtworkClick: (artwork: Artwork) => void
 }
+
+const FEATURED_POOL_SIZE = 15
+const FEATURED_DISPLAY_COUNT = 5
 
 export function HomeView({ onArtworkClick }: HomeViewProps) {
   const [featured, setFeatured] = useState<Artwork[]>([])
@@ -17,12 +21,20 @@ export function HomeView({ onArtworkClick }: HomeViewProps) {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [featuredRes, recentRes] = await Promise.all([
-        searchArtworks('masterpiece paintings'),
-        searchArtworks('recent art collection'),
-      ])
-      setFeatured(featuredRes.results ?? [])
-      setRecent(recentRes.results ?? [])
+      // Featured: semantic search for quality highlights; hero = best match
+      const featuredRes = await searchArtworks('masterpiece paintings')
+      const featuredResults = featuredRes.results ?? []
+      setFeatured(featuredResults)
+
+      // Recent: try newest-by-ingestion first, fallback to semantic if endpoint not deployed
+      let recentResults: Artwork[] = []
+      try {
+        const newestRes = await searchNewestArtworks()
+        recentResults = newestRes.results ?? []
+      } catch {
+        recentResults = (await searchArtworks('recent art collection')).results ?? []
+      }
+      setRecent(recentResults)
     } catch {
       // Silently fail — show empty sections
     } finally {
@@ -35,6 +47,13 @@ export function HomeView({ onArtworkClick }: HomeViewProps) {
   }, [loadData])
 
   const heroArtwork = featured[0] ?? null
+
+  // Daily-varying highlights: shuffle top pool by date seed, take first 5
+  const displayedHighlights = useMemo(() => {
+    const pool = featured.slice(0, FEATURED_POOL_SIZE)
+    if (pool.length <= FEATURED_DISPLAY_COUNT) return pool
+    return shuffleWithSeed(pool, getDateSeed()).slice(0, FEATURED_DISPLAY_COUNT)
+  }, [featured])
 
   if (loading) {
     return (
@@ -53,7 +72,7 @@ export function HomeView({ onArtworkClick }: HomeViewProps) {
   return (
     <div className="pb-6 space-y-2">
       <HeroSection artwork={heroArtwork} />
-      <FeaturedRow artworks={featured} onArtworkClick={onArtworkClick} />
+      <FeaturedRow artworks={displayedHighlights} onArtworkClick={onArtworkClick} />
       <RecentRow artworks={recent} onArtworkClick={onArtworkClick} />
     </div>
   )

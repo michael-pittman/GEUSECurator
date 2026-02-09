@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'https://n8n.geuse.io'
+const BASE_URL = import.meta.env.VITE_N8N_BASE_URL || 'https://ai.geuse.io'
 
 interface ApiPostOptions {
   signal?: AbortSignal

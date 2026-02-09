@@ -4,7 +4,7 @@ Validated against live n8n webhooks on:
 - 2026-02-07 (Phase 1 baseline)
 - 2026-02-08 (Phase 4 curator delegation)
 
-Base URL: `https://n8n.geuse.io`
+Base URL: `https://ai.geuse.io`
 
 ## 1) Search Chat
 

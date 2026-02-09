@@ -180,7 +180,7 @@ curl http://<GPU_IP>:11434/api/ps
 ### Application Metrics
 ```bash
 # Monitor n8n executions
-# Visit: https://n8n.geuse.io → Executions
+# Visit: https://ai.geuse.io → Executions
 
 # Look for:
 # - Reduced execution time
@@ -256,7 +256,7 @@ nvidia-smi
 docker exec ollama ollama list
 
 # 3. n8n workflows updated?
-curl https://n8n.geuse.io/api/v1/workflows
+curl https://ai.geuse.io/api/v1/workflows
 
 # 4. Frontend ready?
 curl https://www.geuse.io/curator/

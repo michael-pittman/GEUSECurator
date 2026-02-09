@@ -19,6 +19,7 @@ NGA Curator is an AI-powered web platform for exploring the National Gallery of 
 Base URL: `https://ai.geuse.io`
 
 - `POST /webhook/art-search-chat/chat` — Search artworks. Body: `{ "chatInput": string, "sessionId": string }`
+- `POST /webhook/home-newest` — Newest artworks by `last_ingested_at` (for home "Check out more"). Body: `{}`, Response: `{ "results": Artwork[] }`. Frontend falls back to semantic search if not deployed.
 - `POST /webhook/curator-assistant/chat` — AI curator Q&A. Body: `{ "chatInput": string, "sessionId": string }`
 - `POST /webhook/data-ingestion` — Ingest artworks. Body: `{ "artworks": Artwork[], "enableVision": boolean }`
 - `POST /webhook/qdrant-search-helper` — Internal vector search helper. Body: `{ "query": string, "limit": number }`
@@ -43,6 +44,8 @@ python scripts/data_ingestion_pipeline.py --limit 100 --batch-size 10
 ## Key Architecture Decisions
 
 **Frontend data flow:** `useSearch` hook calls `searchArtworks()` → `apiPost()` → n8n webhook → Qdrant vector search → formatted results. The `Artwork` type expects an `images[]` array, but the API returns `iiifthumburl` at the result root level too, so `ArtworkCard` checks both paths.
+
+**Home page freshness:** "Today's Art Highlight" uses semantic search ("masterpiece paintings") with a date-seeded shuffle on the top 15 results so the 5 shown vary daily. "Check out more" calls `searchNewestArtworks()` (Postgres `ORDER BY last_ingested_at DESC`); if that endpoint is not deployed, it falls back to semantic search ("recent art collection").
 
 **IIIF image URLs:** NGA thumbnails use `!200,200` sizing. `ArtworkCard` upgrades these to `!600,600` via `getHighResUrl()` for high-res display. Full-size images use the `iiifurl` field without size constraints.
 
