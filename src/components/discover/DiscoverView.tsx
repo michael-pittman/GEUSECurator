@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { MasonryGrid } from './MasonryGrid'
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
-import { searchArtworks } from '../../api/search'
-import type { Artwork } from '../../types/artwork'
+import { discoverArtworksPage, searchArtworks } from '../../api/search'
+import type { Artwork, CollectionResponse } from '../../types/artwork'
 
 const DISCOVER_QUERIES = [
   'paintings',
@@ -16,6 +16,9 @@ const DISCOVER_QUERIES = [
   'watercolor drawings',
   'photography prints',
 ]
+const PAGE_SIZE = 40
+
+type DiscoverMode = 'catalog' | 'fallback'
 
 interface DiscoverViewProps {
   onArtworkClick: (artwork: Artwork) => void
@@ -25,39 +28,99 @@ interface DiscoverViewProps {
 
 export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: DiscoverViewProps) {
   const [artworks, setArtworks] = useState<Artwork[]>([])
+  const [mode, setMode] = useState<DiscoverMode>('catalog')
+  const [showCatalogFallbackNotice, setShowCatalogFallbackNotice] = useState(false)
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const queryIndexRef = useRef(0)
   const seenIdsRef = useRef(new Set<number>())
+  const offsetRef = useRef(0)
   const [hasMore, setHasMore] = useState(true)
 
-  const loadMore = useCallback(async () => {
-    if (loading || queryIndexRef.current >= DISCOVER_QUERIES.length) {
+  const appendUniqueArtworks = useCallback((incoming: Artwork[]) => {
+    const uniqueIncoming: Artwork[] = []
+    for (const artwork of incoming) {
+      if (seenIdsRef.current.has(artwork.objectid)) continue
+      seenIdsRef.current.add(artwork.objectid)
+      uniqueIncoming.push(artwork)
+    }
+    if (uniqueIncoming.length > 0) {
+      setArtworks((prev) => [...prev, ...uniqueIncoming])
+    }
+    return uniqueIncoming.length
+  }, [])
+
+  const loadCatalogPage = useCallback(async () => {
+    const offset = offsetRef.current
+    const response: CollectionResponse = await discoverArtworksPage({
+      limit: PAGE_SIZE,
+      offset,
+    })
+
+    const pageResults = response.results ?? []
+    const appendedCount = appendUniqueArtworks(pageResults)
+    const explicitNextOffset =
+      typeof response.nextOffset === 'number' ? response.nextOffset : null
+    const explicitHasMore =
+      typeof response.hasMore === 'boolean' ? response.hasMore : null
+
+    // Guard for endpoints that ignore pagination and keep returning page 1.
+    if (offset > 0 && pageResults.length > 0 && appendedCount === 0) {
+      throw new Error('Catalog endpoint does not support pagination')
+    }
+
+    offsetRef.current =
+      explicitNextOffset ?? offset + pageResults.length
+
+    const nextHasMore =
+      explicitHasMore ?? pageResults.length === PAGE_SIZE
+    setHasMore(nextHasMore && pageResults.length > 0)
+  }, [appendUniqueArtworks])
+
+  const loadFallbackBatch = useCallback(async () => {
+    if (queryIndexRef.current >= DISCOVER_QUERIES.length) {
       setHasMore(false)
       return
     }
 
+    const query = DISCOVER_QUERIES[queryIndexRef.current]
+    queryIndexRef.current += 1
+    const response = await searchArtworks(query)
+    appendUniqueArtworks(response.results ?? [])
+    setHasMore(queryIndexRef.current < DISCOVER_QUERIES.length)
+  }, [appendUniqueArtworks])
+
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) {
+      return
+    }
+
     setLoading(true)
+    setError(null)
     try {
-      const query = DISCOVER_QUERIES[queryIndexRef.current]
-      queryIndexRef.current += 1
-      const response = await searchArtworks(query)
-      const newResults = (response.results ?? []).filter((a) => {
-        if (seenIdsRef.current.has(a.objectid)) return false
-        seenIdsRef.current.add(a.objectid)
-        return true
-      })
-      setArtworks((prev) => [...prev, ...newResults])
-      if (queryIndexRef.current >= DISCOVER_QUERIES.length) {
-        setHasMore(false)
+      if (mode === 'catalog') {
+        try {
+          await loadCatalogPage()
+        } catch {
+          // Automatic fallback keeps Discover usable while backend pagination is rolling out.
+          setMode('fallback')
+          setShowCatalogFallbackNotice(true)
+          setHasMore(true)
+          queryIndexRef.current = 0
+          await loadFallbackBatch()
+        }
+      } else {
+        await loadFallbackBatch()
       }
     } catch {
-      // Silent fail
+      setError('Unable to load more artworks right now.')
+      setHasMore(false)
     } finally {
       setLoading(false)
       setInitialLoading(false)
     }
-  }, [loading])
+  }, [hasMore, loadCatalogPage, loadFallbackBatch, loading, mode])
 
   useEffect(() => {
     loadMore()
@@ -86,7 +149,24 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
 
   return (
     <div>
-      <p className="text-sm text-text-muted px-5 mb-4">Explore art culture and stories</p>
+      <p className="text-sm text-text-muted px-5 mb-4">
+        {mode === 'catalog'
+          ? 'Explore the full collection'
+          : 'Explore art culture and stories'}
+      </p>
+      {showCatalogFallbackNotice && (
+        <p className="text-xs text-text-muted px-5 mb-4">
+          Full-catalog pagination is unavailable; showing curated discovery highlights.
+        </p>
+      )}
+      {error && (
+        <div
+          className="mx-5 mb-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-red-400 text-sm"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
       <MasonryGrid
         artworks={artworks}
         onArtworkClick={onArtworkClick}
@@ -108,7 +188,11 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
       )}
 
       {!hasMore && artworks.length > 0 && (
-        <p className="text-center text-sm text-text-muted py-8">You've explored the full collection</p>
+        <p className="text-center text-sm text-text-muted py-8">
+          {mode === 'catalog'
+            ? "You've explored the full collection"
+            : "You've reached the end of discovery highlights"}
+        </p>
       )}
     </div>
   )

@@ -268,4 +268,4 @@ curl https://www.geuse.io/curator/
 
 **Good luck with your GPU deployment!** 🚀
 
-*For questions, refer to docs/troubleshooting.md or PROJECT_SUMMARY.md*
+*For questions, refer to troubleshooting.md or PROJECT_SUMMARY.md*

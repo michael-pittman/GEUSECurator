@@ -4,16 +4,18 @@ import { FeaturedRow } from './FeaturedRow'
 import { RecentRow } from './RecentRow'
 import { searchArtworks, searchNewestArtworks } from '../../api/search'
 import { shuffleWithSeed, getDateSeed } from '../../utils/shuffle'
-import type { Artwork } from '../../types/artwork'
+import type { Artwork, FavoriteEntry } from '../../types/artwork'
 
 interface HomeViewProps {
   onArtworkClick: (artwork: Artwork) => void
+  onSeeAll: () => void
+  favorites: FavoriteEntry[]
 }
 
 const FEATURED_POOL_SIZE = 15
 const FEATURED_DISPLAY_COUNT = 5
 
-export function HomeView({ onArtworkClick }: HomeViewProps) {
+export function HomeView({ onArtworkClick, onSeeAll, favorites }: HomeViewProps) {
   const [featured, setFeatured] = useState<Artwork[]>([])
   const [recent, setRecent] = useState<Artwork[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,9 +73,9 @@ export function HomeView({ onArtworkClick }: HomeViewProps) {
 
   return (
     <div className="pb-6 space-y-2">
-      <HeroSection artwork={heroArtwork} />
+      <HeroSection artwork={heroArtwork} favorites={favorites} />
       <FeaturedRow artworks={displayedHighlights} onArtworkClick={onArtworkClick} />
-      <RecentRow artworks={recent} onArtworkClick={onArtworkClick} />
+      <RecentRow artworks={recent} onArtworkClick={onArtworkClick} onSeeAll={onSeeAll} />
     </div>
   )
 }

@@ -8,10 +8,16 @@ The frontend calls `POST /webhook/home-newest` for the "Check out more" row on t
 POST /webhook/home-newest
 Content-Type: application/json
 
-{}
+{
+  "limit": 40,
+  "offset": 0
+}
 ```
 
-No request body required. The frontend sends an empty object.
+`limit` and `offset` are optional.
+
+- Home row sends `{}` (or `{"limit": 20, "offset": 0}`) and renders the first page.
+- Discover flow sends paginated requests and advances `offset` until no more results.
 
 ## Response
 
@@ -19,7 +25,12 @@ Same shape as the search endpoint for compatibility:
 
 ```json
 {
-  "output": "Newest 20 artworks",
+  "output": "Newest artworks page",
+  "limit": 40,
+  "offset": 0,
+  "nextOffset": 40,
+  "hasMore": true,
+  "totalCount": 160000,
   "results": [
     {
       "objectid": 12345,
@@ -38,16 +49,23 @@ Same shape as the search endpoint for compatibility:
 
 The `results` array must contain `Artwork` objects in the same format as `art-search-chat` returns. At minimum: `objectid`, `title`, `attribution`, `displaydate`, `medium`, `classification`, `creditline`, `iiifthumburl` (or `images[0].iiifthumburl`).
 
+Pagination metadata:
+
+- `nextOffset` (number or `null`) when available
+- `hasMore` (boolean) when available
+- `totalCount` (optional) for UI counters/diagnostics
+
 ## Backend Implementation (n8n)
 
 1. **Postgres query** (not Qdrant):
    - Query `artworks` table (has iiifurl, iiifthumburl, updated_at)
    - `ORDER BY updated_at DESC NULLS LAST, objectid DESC`
-   - `LIMIT 20` (or desired count)
+   - `LIMIT {{$json.limit || 20}}`
+   - `OFFSET {{$json.offset || 0}}`
    - Select fields that map to `Artwork`: object_id, title, attribution, display_date, medium, classification, creditline, primary image iiifurl/iiifthumburl
 
 2. **Format** the rows into the `results` array shape expected by the frontend (see `Artwork` in `src/types/artwork.ts` and how `art-search-chat` structures its response).
 
-3. **Webhook** triggers on POST, executes the query, returns JSON.
+3. **Webhook** triggers on POST, executes the query, returns JSON with `results` plus pagination metadata (`nextOffset`, `hasMore`, optional `totalCount`).
 
 If this endpoint is not deployed, the frontend falls back to semantic search (`recent art collection`) so the app continues to work.

@@ -36,6 +36,15 @@ export interface SearchResponse {
   results?: Artwork[]
 }
 
+export interface CollectionResponse extends SearchResponse {
+  limit?: number
+  offset?: number
+  nextOffset?: number | null
+  hasMore?: boolean
+  total?: number
+  totalCount?: number
+}
+
 export interface CuratorRequest {
   chatInput: string
   sessionId: string

@@ -8,16 +8,24 @@ function getHighResUrl(thumbUrl: string): string {
 interface RecentRowProps {
   artworks: Artwork[]
   onArtworkClick: (artwork: Artwork) => void
+  onSeeAll: () => void
 }
 
-export function RecentRow({ artworks, onArtworkClick }: RecentRowProps) {
+export function RecentRow({ artworks, onArtworkClick, onSeeAll }: RecentRowProps) {
   if (artworks.length === 0) return null
 
   return (
     <section className="mt-6">
       <div className="flex items-center justify-between px-5 mb-3">
         <h3 className="text-lg font-bold text-text-primary">Check out more</h3>
-        <span className="text-xs text-accent font-medium">See all</span>
+        <button
+          type="button"
+          onClick={onSeeAll}
+          className="text-xs text-accent font-medium hover:text-accent-light transition-colors"
+          aria-label="See all artworks in Discover"
+        >
+          See all
+        </button>
       </div>
       <HorizontalScroll>
         {artworks.map((artwork) => {

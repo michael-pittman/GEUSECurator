@@ -27,6 +27,10 @@ function App() {
     setSelectedArtwork(null)
   }, [])
 
+  const handleExploreDiscover = useCallback(() => {
+    setActiveTab('discover')
+  }, [])
+
   return (
     <AppShell>
       {/* Skip to content link for keyboard navigation */}
@@ -41,7 +45,11 @@ function App() {
 
       <main id="main-content" className="flex-1 overflow-y-auto pb-20">
         {activeTab === 'home' && (
-          <HomeView onArtworkClick={handleArtworkClick} />
+          <HomeView
+            onArtworkClick={handleArtworkClick}
+            onSeeAll={handleExploreDiscover}
+            favorites={favorites}
+          />
         )}
         {activeTab === 'discover' && (
           <DiscoverView
@@ -62,7 +70,7 @@ function App() {
             favorites={favorites}
             onArtworkClick={handleArtworkClick}
             onRemoveFavorite={toggleFavorite}
-            onExplore={() => setActiveTab('discover')}
+            onExplore={handleExploreDiscover}
           />
         )}
         {activeTab === 'settings' && (

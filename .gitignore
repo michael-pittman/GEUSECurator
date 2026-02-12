@@ -49,7 +49,14 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Scratch/reference assets not used by app runtime
+# Docs/plans (internal planning)
+docs/plans/
+
+# Scratch/reference screenshots (screenshot.png kept for README)
 Ux.png
 home-tab.png
+final-*.png
+prod-modal-*.png
+fresh-discover.png
+mobile-home.png
 Curator*Loop Search/
