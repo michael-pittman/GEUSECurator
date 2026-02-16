@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { MasonryGrid } from './MasonryGrid'
 import { useInfiniteScroll } from '../../hooks/useInfiniteScroll'
 import { discoverArtworksPage, searchArtworks } from '../../api/search'
+import { fetchCatalogFallback } from '../../utils/catalogFallback'
 import type { Artwork, CollectionResponse } from '../../types/artwork'
 
 const DISCOVER_QUERIES = [
@@ -18,7 +19,7 @@ const DISCOVER_QUERIES = [
 ]
 const PAGE_SIZE = 40
 
-type DiscoverMode = 'catalog' | 'fallback'
+type DiscoverMode = 'catalog' | 'fallback' | 'cache'
 
 interface DiscoverViewProps {
   onArtworkClick: (artwork: Artwork) => void
@@ -36,6 +37,8 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
   const queryIndexRef = useRef(0)
   const seenIdsRef = useRef(new Set<number>())
   const offsetRef = useRef(0)
+  const cachedCatalogRef = useRef<Artwork[]>([])
+  const cachedOffsetRef = useRef(0)
   const [hasMore, setHasMore] = useState(true)
 
   const appendUniqueArtworks = useCallback((incoming: Artwork[]) => {
@@ -91,6 +94,20 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
     setHasMore(queryIndexRef.current < DISCOVER_QUERIES.length)
   }, [appendUniqueArtworks])
 
+  const loadCachedPage = useCallback(async () => {
+    if (cachedCatalogRef.current.length === 0) {
+      cachedCatalogRef.current = await fetchCatalogFallback()
+      cachedOffsetRef.current = 0
+    }
+
+    const start = cachedOffsetRef.current
+    const end = start + PAGE_SIZE
+    const page = cachedCatalogRef.current.slice(start, end)
+    const appended = appendUniqueArtworks(page)
+    cachedOffsetRef.current = end
+    setHasMore(end < cachedCatalogRef.current.length && appended > 0)
+  }, [appendUniqueArtworks])
+
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) {
       return
@@ -103,13 +120,22 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
         try {
           await loadCatalogPage()
         } catch {
-          // Automatic fallback keeps Discover usable while backend pagination is rolling out.
-          setMode('fallback')
-          setShowCatalogFallbackNotice(true)
-          setHasMore(true)
-          queryIndexRef.current = 0
-          await loadFallbackBatch()
+          try {
+            // Backend is unavailable; fallback to cached manifest so all cached items are discoverable.
+            setMode('cache')
+            setShowCatalogFallbackNotice(true)
+            await loadCachedPage()
+          } catch {
+            // Semantic fallback if catalog fails to load.
+            setMode('fallback')
+            setShowCatalogFallbackNotice(true)
+            setHasMore(true)
+            queryIndexRef.current = 0
+            await loadFallbackBatch()
+          }
         }
+      } else if (mode === 'cache') {
+        await loadCachedPage()
       } else {
         await loadFallbackBatch()
       }
@@ -120,7 +146,7 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
       setLoading(false)
       setInitialLoading(false)
     }
-  }, [hasMore, loadCatalogPage, loadFallbackBatch, loading, mode])
+  }, [hasMore, loadCachedPage, loadCatalogPage, loadFallbackBatch, loading, mode])
 
   useEffect(() => {
     loadMore()
@@ -152,11 +178,15 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
       <p className="text-sm text-text-muted px-5 mb-4">
         {mode === 'catalog'
           ? 'Explore the full collection'
-          : 'Explore art culture and stories'}
+          : mode === 'cache'
+            ? 'Explore cached collection while backend is offline'
+            : 'Explore art culture and stories'}
       </p>
       {showCatalogFallbackNotice && (
         <p className="text-xs text-text-muted px-5 mb-4">
-          Full-catalog pagination is unavailable; showing curated discovery highlights.
+          {mode === 'cache'
+            ? 'Backend is unavailable; showing cached collection from S3.'
+            : 'Full-catalog pagination is unavailable; showing curated discovery highlights.'}
         </p>
       )}
       {error && (
@@ -191,7 +221,9 @@ export function DiscoverView({ onArtworkClick, isFavorited, onToggleFavorite }: 
         <p className="text-center text-sm text-text-muted py-8">
           {mode === 'catalog'
             ? "You've explored the full collection"
-            : "You've reached the end of discovery highlights"}
+            : mode === 'cache'
+              ? "You've explored all cached artworks"
+              : "You've reached the end of discovery highlights"}
         </p>
       )}
     </div>
