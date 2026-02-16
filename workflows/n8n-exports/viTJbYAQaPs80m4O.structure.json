@@ -1,0 +1,20 @@
+{
+  "id": "viTJbYAQaPs80m4O",
+  "name": "Curator Assistant",
+  "active": true,
+  "isArchived": false,
+  "nodeCount": 10,
+  "connectionCount": 9,
+  "nodes": [
+    {"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook"},
+    {"id":"prepare","name":"Prepare Input","type":"n8n-nodes-base.code"},
+    {"id":"agent","name":"AI Agent","type":"@n8n/n8n-nodes-langchain.agent"},
+    {"id":"model","name":"Ollama Chat Model","type":"@n8n/n8n-nodes-langchain.lmChatOllama"},
+    {"id":"memory","name":"Simple Memory","type":"@n8n/n8n-nodes-langchain.memoryBufferWindow"},
+    {"id":"vectorTool","name":"Vector Store QA Tool","type":"@n8n/n8n-nodes-langchain.toolVectorStore"},
+    {"id":"vectorStore","name":"Qdrant Artwork Store","type":"@n8n/n8n-nodes-langchain.vectorStoreQdrant"},
+    {"id":"embeddings","name":"Embeddings (Ollama)","type":"@n8n/n8n-nodes-langchain.embeddingsOllama"},
+    {"id":"format","name":"Format Response","type":"n8n-nodes-base.code"},
+    {"id":"respond","name":"Respond","type":"n8n-nodes-base.respondToWebhook"}
+  ]
+}

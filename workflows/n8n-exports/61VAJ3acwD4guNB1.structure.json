@@ -1,0 +1,16 @@
+{
+  "id": "61VAJ3acwD4guNB1",
+  "name": "Qdrant Search Helper",
+  "active": true,
+  "isArchived": false,
+  "nodeCount": 6,
+  "connectionCount": 5,
+  "nodes": [
+    {"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook"},
+    {"id":"normalize","name":"Normalize Request","type":"n8n-nodes-base.code"},
+    {"id":"embeddings","name":"Embeddings (Ollama)","type":"@n8n/n8n-nodes-langchain.embeddingsOllama"},
+    {"id":"qdrant","name":"Qdrant Search","type":"@n8n/n8n-nodes-langchain.vectorStoreQdrant"},
+    {"id":"format","name":"Format Results","type":"n8n-nodes-base.code"},
+    {"id":"respond","name":"Respond","type":"n8n-nodes-base.respondToWebhook"}
+  ]
+}

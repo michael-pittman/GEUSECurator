@@ -1,7 +1,8 @@
 import { apiPost } from './client'
 import type { CuratorRequest, CuratorResponse } from '../types/artwork'
 
-const CURATOR_ENDPOINT = import.meta.env.VITE_CURATOR_ENDPOINT || '/webhook/curator-assistant/chat'
+const CURATOR_ENDPOINT =
+  import.meta.env.VITE_CURATOR_ENDPOINT || '/webhook/viTJbYAQaPs80m4O/webhook/curator-assistant/chat'
 
 export async function askCurator(
   query: string,

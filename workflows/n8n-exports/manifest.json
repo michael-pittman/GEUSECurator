@@ -1,0 +1,13 @@
+{
+  "exportedAt": "2026-02-16T05:26:00Z",
+  "source": "https://ai.geuse.io",
+  "n8nVersion": "2.7.5",
+  "workflows": [
+    {"id":"AvbnMRIDp33SQl10","name":"Art Search Chat","file":"workflows/n8n-exports/AvbnMRIDp33SQl10.structure.json"},
+    {"id":"mrBvmL4wIUlZIGtY","name":"Curator Helper","file":"workflows/n8n-exports/mrBvmL4wIUlZIGtY.structure.json"},
+    {"id":"BsryWt8HYdCsVN46","name":"Data Ingestion","file":"workflows/n8n-exports/BsryWt8HYdCsVN46.structure.json"},
+    {"id":"61VAJ3acwD4guNB1","name":"Qdrant Search Helper","file":"workflows/n8n-exports/61VAJ3acwD4guNB1.structure.json"},
+    {"id":"viTJbYAQaPs80m4O","name":"Curator Assistant","file":"workflows/n8n-exports/viTJbYAQaPs80m4O.structure.json"},
+    {"id":"LNfYCLoZluQYsHow","name":"Home Newest","file":"workflows/n8n-exports/LNfYCLoZluQYsHow.structure.json"}
+  ]
+}

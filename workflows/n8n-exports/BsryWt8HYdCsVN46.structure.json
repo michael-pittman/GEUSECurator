@@ -1,0 +1,22 @@
+{
+  "id": "BsryWt8HYdCsVN46",
+  "name": "Data Ingestion",
+  "active": true,
+  "isArchived": false,
+  "nodeCount": 12,
+  "connectionCount": 11,
+  "nodes": [
+    {"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook"},
+    {"id":"split","name":"Split Artworks","type":"n8n-nodes-base.code"},
+    {"id":"route","name":"Route Artworks","type":"n8n-nodes-base.switch"},
+    {"id":"empty","name":"Empty Summary","type":"n8n-nodes-base.code"},
+    {"id":"upsertArtwork","name":"Upsert Artwork","type":"n8n-nodes-base.postgres"},
+    {"id":"upsertImage","name":"Upsert Primary Image","type":"n8n-nodes-base.postgres"},
+    {"id":"buildText","name":"Build Search Text","type":"n8n-nodes-base.code"},
+    {"id":"qdrant","name":"Qdrant Upsert","type":"@n8n/n8n-nodes-langchain.vectorStoreQdrant"},
+    {"id":"embed","name":"Embeddings (Ollama)","type":"@n8n/n8n-nodes-langchain.embeddingsOllama"},
+    {"id":"loader","name":"JSON Input Loader","type":"@n8n/n8n-nodes-langchain.documentJsonInputLoader"},
+    {"id":"summary","name":"Build Summary","type":"n8n-nodes-base.code"},
+    {"id":"respond","name":"Respond","type":"n8n-nodes-base.respondToWebhook"}
+  ]
+}

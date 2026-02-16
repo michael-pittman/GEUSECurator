@@ -1,0 +1,21 @@
+{
+  "id": "mrBvmL4wIUlZIGtY",
+  "name": "Curator Helper",
+  "active": true,
+  "isArchived": false,
+  "nodeCount": 11,
+  "connectionCount": 10,
+  "nodes": [
+    {"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook"},
+    {"id":"normalize","name":"Normalize Request","type":"n8n-nodes-base.code"},
+    {"id":"route","name":"Route Operation","type":"n8n-nodes-base.switch"},
+    {"id":"reviewQuery","name":"Review Queue Query","type":"n8n-nodes-base.postgres"},
+    {"id":"formatReview","name":"Format Review Queue","type":"n8n-nodes-base.code"},
+    {"id":"detailsQuery","name":"Artwork Details Query","type":"n8n-nodes-base.postgres"},
+    {"id":"formatDetails","name":"Format Artwork Details","type":"n8n-nodes-base.code"},
+    {"id":"embeddings","name":"Embeddings (Ollama)","type":"@n8n/n8n-nodes-langchain.embeddingsOllama"},
+    {"id":"searchQdrant","name":"Search Qdrant","type":"@n8n/n8n-nodes-langchain.vectorStoreQdrant"},
+    {"id":"formatSearch","name":"Format Search Results","type":"n8n-nodes-base.code"},
+    {"id":"respond","name":"Respond","type":"n8n-nodes-base.respondToWebhook"}
+  ]
+}

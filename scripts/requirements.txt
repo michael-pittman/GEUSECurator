@@ -1,3 +1,5 @@
 # NGA Curator - Ingestion Pipeline Dependencies
 pandas>=2.2.0
 requests>=2.32.0
+boto3>=1.34.0
+Pillow>=10.0.0

@@ -1,6 +1,6 @@
 # GPU Deployment Quick Reference
 
-## 🚀 Quick Start: GPU Migration
+## Quick Start: GPU Migration
 
 ### Prerequisites
 - [ ] GPU instance ready (CUDA-capable)
@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Deployment Steps
+## Deployment Steps
 
 ### 1. Deploy Ollama on GPU
 ```bash
@@ -36,7 +36,8 @@ docker exec ollama nvidia-smi
 # Chat model (tool-calling capable)
 docker exec ollama ollama pull llama3.2:3b
 
-# Embedding model (768-d vectors)
+# Embedding model
+# Note: vector dimensionality must match your Qdrant collection config.
 docker exec ollama ollama pull nomic-embed-text:latest
 
 # Optional: Vision model
@@ -56,7 +57,18 @@ docker exec ollama ollama list
 # - AI Search Chat (cjsDoFFAvajWLhIo3Xy6Q)
 # - AI Curator Assistant (2e0HoMh3hrIYZ2SZUQrMS)
 # - Helper - Curator Operations (sGgv6lUC6udEkKKB)
-# - AI Data Ingestion (if exists)
+# - AI Data Ingestion (webhook: /webhook/BsryWt8HYdCsVN46/webhook/data-ingestion)
+```
+
+If webhooks are returning 404 ("not registered") or n8n shows production URLs as `https://localhost:5678/...`,
+fix n8n's public URL settings and restart n8n:
+
+```bash
+N8N_HOST=ai.geuse.io
+N8N_PROTOCOL=https
+N8N_PORT=5678
+N8N_WEBHOOK_URL=https://ai.geuse.io/
+N8N_EDITOR_BASE_URL=https://ai.geuse.io/
 ```
 
 ### 4. Test Performance
@@ -65,30 +77,44 @@ docker exec ollama ollama list
 curl http://<GPU_IP>:11434/api/embeddings \
   -d '{"model": "nomic-embed-text", "prompt": "test artwork description"}'
 
-# Expected: <100ms response time
+# Record the time (don’t guess)
+curl -sS -w "\nTTFB=%{time_starttransfer}s total=%{time_total}s\n" -o /dev/null \
+  http://<GPU_IP>:11434/api/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nomic-embed-text","prompt":"test artwork description"}'
 
 # Test chat
 curl http://<GPU_IP>:11434/api/generate \
   -d '{"model": "llama3.2:3b", "prompt": "Hello", "stream": false}'
 
-# Expected: <500ms response time
+# Record the time (don’t guess)
+curl -sS -w "\nTTFB=%{time_starttransfer}s total=%{time_total}s\n" -o /dev/null \
+  http://<GPU_IP>:11434/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.2:3b","prompt":"Hello","stream":false}'
 ```
 
 ### 5. Run Data Ingestion
 ```bash
 # Navigate to project
-cd /Users/nucky/Repos/NGA
+cd /Users/nucky/Repos/GEUSECurator
 
-# Activate venv
+# Install requirements (once)
+python3 -m venv .venv
 source .venv/bin/activate
+pip install -r scripts/requirements.txt
 
 # Test with 5 artworks
-python scripts/data_ingestion_pipeline.py --limit 5 --batch-size 1
+python scripts/data_ingestion_pipeline.py --limit 5 --batch-size 1 --cache-thumbnails-s3
 
-# Expected: Success (no timeouts)
+# If you need to point at a different n8n instance:
+# WEBHOOK_URL=https://ai.geuse.io/webhook/BsryWt8HYdCsVN46/webhook/data-ingestion python scripts/data_ingestion_pipeline.py --limit 5 --batch-size 1 --cache-thumbnails-s3
 
 # Full ingestion (1000 artworks)
-python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20
+python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20 --cache-thumbnails-s3
+
+# Ingestion refresh command (recommended daily/refresh run)
+python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20 --cache-thumbnails-s3
 ```
 
 ### 6. Verify Frontend
@@ -101,18 +127,20 @@ curl https://www.geuse.io/curator/
 
 ---
 
-## ⚡ Expected Performance Gains
+## Expected Performance Gains
 
 | Operation | CPU (Current) | GPU (Expected) | Improvement |
 |-----------|---------------|----------------|-------------|
-| Embedding | 5-10s | <100ms | **50-100x** |
-| Chat inference | 2-5s | <500ms | **4-10x** |
-| Ingestion/artwork | 30-40s | 1-2s | **15-20x** |
-| Search query | 10-30s | <1s | **10-30x** |
+| Embedding | 5-10s | sub-second | varies |
+| Chat inference | 2-5s | sub-second to a few seconds | varies |
+| Ingestion/artwork | 30-40s | seconds-scale | varies |
+| Search query | 10-30s | seconds-scale | varies |
+
+Use the timing `curl -w` snippets above plus n8n execution durations to validate real gains.
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### GPU Not Detected
 ```bash
@@ -154,7 +182,7 @@ sudo ufw allow 11434/tcp
 
 ---
 
-## 📊 Monitoring
+## Monitoring
 
 ### GPU Utilization
 ```bash
@@ -190,20 +218,20 @@ curl http://<GPU_IP>:11434/api/ps
 
 ---
 
-## 🎯 Success Criteria
+## Success Criteria
 
 - [ ] Ollama running on GPU
 - [ ] All models loaded (<5 min)
 - [ ] n8n workflows updated
-- [ ] Test ingestion succeeds (<2s per artwork)
-- [ ] Search queries complete (<1s)
+- [ ] Test ingestion succeeds (no timeouts / retries within chosen batch size)
+- [ ] Search queries complete acceptably (validate with real timings)
 - [ ] Frontend shows real artwork images
 - [ ] No CloudFront timeouts
 - [ ] GPU utilization 60-90% during load
 
 ---
 
-## 🔄 Rollback Plan
+## Rollback Plan
 
 If issues occur:
 
@@ -223,7 +251,7 @@ If issues occur:
 
 ---
 
-## 📝 Post-Deployment
+## Post-Deployment
 
 ### Update Documentation
 - [ ] Update CLAUDE.md with new Ollama URL

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { SplashScreen } from './components/SplashScreen'
 import { AppShell } from './components/layout/AppShell'
 import { BottomNav } from './components/layout/BottomNav'
 import { TabHeader } from './components/layout/TabHeader'
@@ -14,10 +15,15 @@ import type { TabId } from './types/navigation'
 import type { Artwork } from './types/artwork'
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true)
   const [activeTab, setActiveTab] = useState<TabId>('home')
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null)
   const sessionId = useSessionId()
   const { favorites, isFavorited, toggleFavorite, clearAll } = useFavorites()
+
+  const handleSplashComplete = useCallback(() => {
+    setShowSplash(false)
+  }, [])
 
   const handleArtworkClick = useCallback((artwork: Artwork) => {
     setSelectedArtwork(artwork)
@@ -33,6 +39,7 @@ function App() {
 
   return (
     <AppShell>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       {/* Skip to content link for keyboard navigation */}
       <a
         href="#main-content"

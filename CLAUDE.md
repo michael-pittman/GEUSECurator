@@ -18,12 +18,12 @@ NGA Curator is an AI-powered web platform for exploring the National Gallery of 
 
 Base URL: `https://ai.geuse.io`
 
-- `POST /webhook/art-search-chat/chat` — Search artworks. Body: `{ "chatInput": string, "sessionId": string }`
-- `POST /webhook/home-newest` — Newest artworks by `last_ingested_at` (for home "Check out more"). Body: `{}`, Response: `{ "results": Artwork[] }`. Frontend falls back to semantic search if not deployed.
-- `POST /webhook/curator-assistant/chat` — AI curator Q&A. Body: `{ "chatInput": string, "sessionId": string }`
-- `POST /webhook/data-ingestion` — Ingest artworks. Body: `{ "artworks": Artwork[], "enableVision": boolean }`
-- `POST /webhook/qdrant-search-helper` — Internal vector search helper. Body: `{ "query": string, "limit": number }`
-- `POST /webhook/curator-helper` — Internal curator operations helper
+- `POST /webhook/AvbnMRIDp33SQl10/webhook/art-search-chat/chat` — Search artworks. Body: `{ "chatInput": string, "sessionId": string }`
+- `POST /webhook/LNfYCLoZluQYsHow/webhook/home-newest` — Newest artworks by `last_ingested_at` (for home "Check out more"). Body: `{}`, Response: `{ "results": Artwork[] }`. Frontend falls back to semantic search if not deployed.
+- `POST /webhook/viTJbYAQaPs80m4O/webhook/curator-assistant/chat` — AI curator Q&A. Body: `{ "chatInput": string, "sessionId": string }`
+- `POST /webhook/BsryWt8HYdCsVN46/webhook/data-ingestion` — Ingest artworks. Body: `{ "artworks": Artwork[], "enableVision": boolean }`
+- `POST /webhook/61VAJ3acwD4guNB1/webhook/qdrant-search-helper` — Internal vector search helper. Body: `{ "query": string, "limit": number }`
+- `POST /webhook/mrBvmL4wIUlZIGtY/webhook/curator-helper` — Internal curator operations helper
 
 ## Commands
 
@@ -38,7 +38,10 @@ npm run build && aws s3 sync dist/ s3://www.geuse.io/curator/ --delete
 
 # Data ingestion (requires .venv)
 source .venv/bin/activate
-python scripts/data_ingestion_pipeline.py --limit 100 --batch-size 10
+python scripts/data_ingestion_pipeline.py --limit 100 --batch-size 10 --cache-thumbnails-s3
+
+# Refresh cached frontend thumbnails in S3 on ingestion
+python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20 --cache-thumbnails-s3
 ```
 
 ## Key Architecture Decisions
@@ -49,7 +52,9 @@ python scripts/data_ingestion_pipeline.py --limit 100 --batch-size 10
 
 **IIIF image URLs:** NGA thumbnails use `!200,200` sizing. `ArtworkCard` upgrades these to `!600,600` via `getHighResUrl()` for high-res display. Full-size images use the `iiifurl` field without size constraints.
 
-**n8n workflow pattern:** Both search and curator use HTTP delegation to helper workflows to stay within memory limits. The main workflow receives the chat trigger, delegates to a helper via HTTP POST to `localhost:5678/webhook/...`, then formats the response. The curator pipeline: Chat Trigger → Search Helper → Build LLM Prompt → Ollama Generate → Format Response.
+**n8n workflow pattern:** Both search and curator can use HTTP delegation to helper workflows to stay within memory limits.
+
+Important: In production, avoid hardcoding `localhost:5678` inside workflows unless the helper is guaranteed to be on the same host/container network. Prefer calling the public base URL (`https://ai.geuse.io`) and use each webhook node's current production URL. On this n8n `2.7.5` instance, production routes are currently registered as `/webhook/<workflowId>/webhook/<path>`.
 
 **Vite base path:** Set to `/curator/` in `vite.config.ts` for S3 subdirectory deployment. All asset paths are relative to this base.
 

@@ -25,7 +25,7 @@ test('search suggestions dispatch distinct queries and avoid identical top resul
 
     const response = await Promise.all([
       page.waitForResponse((res) => {
-        if (!res.url().includes('/webhook/art-search-chat/chat')) return false;
+        if (!res.url().includes('/art-search-chat/chat')) return false;
         if (res.request().method() !== 'POST') return false;
         try {
           const payload = JSON.parse(res.request().postData() || '{}');

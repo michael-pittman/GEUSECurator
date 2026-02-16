@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { HeroSection } from './HeroSection'
 import { FeaturedRow } from './FeaturedRow'
 import { RecentRow } from './RecentRow'
+import { ServiceWarning } from './ServiceWarning'
 import { searchArtworks, searchNewestArtworks } from '../../api/search'
 import { shuffleWithSeed, getDateSeed } from '../../utils/shuffle'
 import type { Artwork, FavoriteEntry } from '../../types/artwork'
@@ -74,6 +75,7 @@ export function HomeView({ onArtworkClick, onSeeAll, favorites }: HomeViewProps)
   return (
     <div className="pb-6 space-y-2">
       <HeroSection artwork={heroArtwork} favorites={favorites} />
+      <ServiceWarning />
       <FeaturedRow artworks={displayedHighlights} onArtworkClick={onArtworkClick} />
       <RecentRow artworks={recent} onArtworkClick={onArtworkClick} onSeeAll={onSeeAll} />
     </div>

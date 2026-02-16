@@ -1,8 +1,10 @@
 import { apiPost } from './client'
 import type { CollectionResponse, SearchRequest, SearchResponse } from '../types/artwork'
 
-const SEARCH_ENDPOINT = import.meta.env.VITE_SEARCH_ENDPOINT || '/webhook/art-search-chat/chat'
-const NEWEST_ENDPOINT = import.meta.env.VITE_NEWEST_ENDPOINT || '/webhook/home-newest'
+const SEARCH_ENDPOINT =
+  import.meta.env.VITE_SEARCH_ENDPOINT || '/webhook/AvbnMRIDp33SQl10/webhook/art-search-chat/chat'
+const NEWEST_ENDPOINT =
+  import.meta.env.VITE_NEWEST_ENDPOINT || '/webhook/LNfYCLoZluQYsHow/webhook/home-newest'
 const DISCOVER_ENDPOINT = import.meta.env.VITE_DISCOVER_ENDPOINT || NEWEST_ENDPOINT
 
 interface SearchOptions {
