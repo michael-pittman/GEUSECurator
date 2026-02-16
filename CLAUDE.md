@@ -34,7 +34,7 @@ npm run preview      # Preview production build locally
 npm run lint         # ESLint check
 
 # Deploy to production
-npm run build && aws s3 sync dist/ s3://www.geuse.io/curator/ --delete
+npm run build && aws s3 sync dist/ s3://www.geuse.io/curator/ --delete --exclude "artwork-cache/*"
 
 # Data ingestion (requires .venv)
 source .venv/bin/activate

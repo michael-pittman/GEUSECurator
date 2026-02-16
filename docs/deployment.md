@@ -89,12 +89,14 @@ npm run build
 # 2. Upload to S3
 aws s3 sync dist/ s3://www.geuse.io/curator/ \
   --delete \
+  --exclude "artwork-cache/*" \
   --cache-control "public, max-age=31536000, immutable" \
   --exclude "*.html" \
   --exclude "*.svg"
 
 # 3. Upload HTML with no-cache
 aws s3 sync dist/ s3://www.geuse.io/curator/ \
+  --exclude "artwork-cache/*" \
   --exclude "*" \
   --include "*.html" \
   --cache-control "public, max-age=0, must-revalidate" \
@@ -102,6 +104,7 @@ aws s3 sync dist/ s3://www.geuse.io/curator/ \
 
 # 4. Upload SVG with correct content-type (optional, but safer than relying on autodetect)
 aws s3 sync dist/ s3://www.geuse.io/curator/ \
+  --exclude "artwork-cache/*" \
   --exclude "*" \
   --include "*.svg" \
   --cache-control "public, max-age=0, must-revalidate" \

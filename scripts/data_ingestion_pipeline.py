@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import logging
 import mimetypes
 import os
@@ -52,6 +53,7 @@ REQUEST_TIMEOUT = 300
 THUMBNAIL_FETCH_TIMEOUT = 30
 S3_CACHE_BUCKET = os.getenv("S3_CACHE_BUCKET", "www.geuse.io")
 S3_CACHE_PREFIX = os.getenv("S3_CACHE_PREFIX", "curator/artwork-cache/thumbs")
+S3_CATALOG_KEY = os.getenv("S3_CATALOG_KEY", "curator/artwork-cache/catalog.json")
 S3_PUBLIC_BASE_URL = os.getenv("S3_PUBLIC_BASE_URL", "https://www.geuse.io")
 CACHE_IMAGE_SIZE = 600
 CACHE_MIN_WIDTH = 400
@@ -246,6 +248,51 @@ def cache_thumbnail_to_s3(
         return artwork
 
 
+def build_catalog_manifest(artworks: list[dict]) -> dict:
+    items = []
+    now_iso = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    for artwork in artworks:
+        objectid = artwork.get('objectid')
+        if not objectid:
+            continue
+        items.append({
+            'objectid': int(objectid),
+            'title': (artwork.get('title') or '').strip(),
+            'attribution': (artwork.get('attribution') or '').strip(),
+            'displaydate': (artwork.get('displaydate') or '').strip(),
+            'medium': (artwork.get('medium') or '').strip(),
+            'classification': (artwork.get('classification') or '').strip(),
+            'creditline': (artwork.get('creditline') or '').strip(),
+            'iiifthumburl': (artwork.get('iiifthumburl') or '').strip(),
+        })
+
+    return {
+        'generatedAt': now_iso,
+        'count': len(items),
+        'items': items,
+    }
+
+
+def upload_catalog_manifest_to_s3(
+    s3_client,
+    bucket: str,
+    catalog_key: str,
+    manifest: dict,
+) -> None:
+    body = json.dumps(manifest, ensure_ascii=True, separators=(',', ':')).encode('utf-8')
+    s3_client.put_object(
+        Bucket=bucket,
+        Key=catalog_key,
+        Body=body,
+        ContentType='application/json',
+        CacheControl='public, max-age=60, must-revalidate',
+        Metadata={
+            'generated-at': manifest.get('generatedAt', ''),
+            'count': str(manifest.get('count', 0)),
+        },
+    )
+
+
 def send_batch(
     artworks: list,
     webhook_url: str,
@@ -296,6 +343,7 @@ def main():
     parser.add_argument('--cache-thumbnails-s3', action='store_true', help='Cache iiif thumbnails to S3 and rewrite iiifthumburl')
     parser.add_argument('--s3-cache-bucket', type=str, default=S3_CACHE_BUCKET, help=f'S3 bucket for cached thumbnails (default: {S3_CACHE_BUCKET})')
     parser.add_argument('--s3-cache-prefix', type=str, default=S3_CACHE_PREFIX, help=f'S3 key prefix for cached thumbnails (default: {S3_CACHE_PREFIX})')
+    parser.add_argument('--s3-catalog-key', type=str, default=S3_CATALOG_KEY, help=f'S3 key for fallback catalog manifest (default: {S3_CATALOG_KEY})')
     parser.add_argument('--s3-public-base-url', type=str, default=S3_PUBLIC_BASE_URL, help=f'Public base URL that serves S3 cache (default: {S3_PUBLIC_BASE_URL})')
     parser.add_argument('--thumbnail-fetch-timeout', type=int, default=THUMBNAIL_FETCH_TIMEOUT, help=f'Thumbnail fetch timeout in seconds (default: {THUMBNAIL_FETCH_TIMEOUT})')
     parser.add_argument('--cache-image-size', type=int, default=CACHE_IMAGE_SIZE, help=f'IIIF square target size for cached images (default: {CACHE_IMAGE_SIZE})')
@@ -377,6 +425,20 @@ def main():
             if updated.get('iiifthumburl') != before:
                 cached_count += 1
         logger.info("S3 thumbnail caching complete: %s/%s rewritten", cached_count, len(all_artworks))
+
+        catalog_manifest = build_catalog_manifest(all_artworks)
+        upload_catalog_manifest_to_s3(
+            s3_client=s3_client,
+            bucket=args.s3_cache_bucket,
+            catalog_key=args.s3_catalog_key,
+            manifest=catalog_manifest,
+        )
+        logger.info(
+            "Uploaded fallback catalog manifest: s3://%s/%s (%s items)",
+            args.s3_cache_bucket,
+            args.s3_catalog_key,
+            catalog_manifest.get('count', 0),
+        )
 
     if args.dry_run:
         logger.info("DRY RUN — not sending to webhook")

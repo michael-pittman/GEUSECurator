@@ -115,6 +115,9 @@ python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20 --cache-t
 
 # Ingestion refresh command (recommended daily/refresh run)
 python scripts/data_ingestion_pipeline.py --limit 1000 --batch-size 20 --cache-thumbnails-s3
+
+# Optional: random sample + high-quality cache controls + catalog manifest upload
+# python scripts/data_ingestion_pipeline.py --limit 1000 --sample-percent 10 --batch-size 20 --cache-thumbnails-s3 --cache-image-size 600 --cache-min-width 400 --cache-min-height 400 --cache-min-bytes 15000
 ```
 
 ### 6. Verify Frontend
